@@ -1,0 +1,43 @@
+Here are the instructions for python configuration in VScode
+
+1. Install a python extension in VScode. This can be achieved by installing the extension in the VScode Marketplace
+https://code.visualstudio.com/docs/python/python-tutorial
+
+2. Install a python interpreter.
+This means you need to install a python in your computer. You can install it from the official python website. You can also install Anaconda/Miniconda, and it will automatically install a python
+
+3. Select a python interpreter.
+
+4. Set configuration options in the launch.json file.
+https://code.visualstudio.com/docs/python/debugging#_python
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Python: Current File",
+            "python.pythonPath": "/Users/yuehuiqian/opt/anaconda3/envs/python37/python.app",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "/Users/yuehuiqian/Library/CloudStorage/OneDrive-UniversityofMaryland/Programming/Python_laptop/data/input_vertices_1.off",
+                "/Users/yuehuiqian/Library/CloudStorage/OneDrive-UniversityofMaryland/Programming/Python_laptop/data/input_vertices_1_Tri2node.csv",
+                "/Users/yuehuiqian/Library/CloudStorage/OneDrive-UniversityofMaryland/Programming/Python_laptop/data/input_vertices_1_TT2E.csv"
+            ],
+            "justMyCode": true
+        }
+    ]
+}
+
+name: Provides the name for the debug configuration that appears in the VS Code dropdown list.
+type: Identifies the type of debugger to use.
+request: Specifies the mode in which to start debugging: launch/attach
+program: Provides the fully qualified path to the python program's entry module (startup file). The value ${file}, often used in default configurations, uses the currently active file in the editor.
+python: The full path that points to the Python interpreter to be used for debugging.
+args: Specifies arguments to pass to the Python program.
+justMyCode: When omitted or set to true (the default), restricts debugging to user-written code only. Set to false to also enable debugging of standard library functions.
