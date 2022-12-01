@@ -1,0 +1,9 @@
+1. Steps to change the default open directory of Anaconda
+1) generate the Jupyter config file with 
+   jupyter notebook --generate-config
+2) open the .jupyter/jupyter_notebook_config.py and add the expected notebook directory
+   c.NotebookApp.notebook_dir = '/Users/yuehuiqian/Library/CloudStorage/OneDrive-UniversityofMaryland/Programming'
+
+2. Setps to change the default browser of Anaconda in mac
+   open the .jupyter/jupyter_notebook_config.py and add the expected browser
+   c.NotebookApp.browser = 'open -a /Applications/Firefox.app %s'
