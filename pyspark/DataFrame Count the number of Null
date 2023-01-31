@@ -1,0 +1,8 @@
+Count the number of Null, None, NaN of All DataFrame columns
+
+1. Method one, count the number of Null, None, and NaN
+-from pyspark.sql.functions import col,isnan, when, count
+-df_ver_origin.select([count(when(isnan(c) | col(c).isNull(), c)).alias(c) for c in df_ver_origin.columns]).show()
+
+2. Method two, count the number of valid rows for each column to check if Null etc. exist
+-df_tri_group1.select([count(c) for c in df_tri_group1.columns]).show()
