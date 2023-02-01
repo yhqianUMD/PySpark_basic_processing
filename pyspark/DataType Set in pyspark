@@ -1,0 +1,23 @@
+We can not forcely convert a list to a set inside an udf in pyspark. But we can define a set and add each element to this set inside an udf.
+
+# obtain VV relation
+def check_unique(multi_tri_set_flatten):
+    len1 = len(multi_tri_set_flatten)
+    # len2 = len(set(multi_tri_set_flatten)) # this will cause an error of unhashable
+    tri_set = set()
+    for tri in multi_tri_set_flatten:
+        tri_set.update(tri)
+    len2 = len(tri_set)
+    if len1 == len2:
+        return False
+    else:
+        return True
+    
+# convert a function to an udf and determine the return type
+# https://spark.apache.org/docs/3.1.3/api/python/reference/api/pyspark.sql.functions.udf.html
+check_unique_udf = udf(check_unique, BooleanType())
+
+union123_group_new_VT_check = union123_group_new_VT.withColumn("duplicate", check_unique_udf(union123_group_new_VT.multi_tri_set_flatten))
+# union123_group_new = union123_group_new.select(col("r1").alias("Ver"), col("multi_pts_order").alias("VV"), col("multi_tri_set"))
+union123_group_new_VT_check.printSchema()
+union123_group_new_VT_check.show()
