@@ -1,0 +1,35 @@
+1.	Split a column which is a simple array into multiple columns
+- Input: an array of simple data type, e.g., [2,5]
+- Output: multiple columns, e.g., two columns, [2], [5]
+- Using select()
+e.g.,
+df_crit_E_pts_saddle = df_crit_E.select(col("Ver"), col("Saddle_edge"), df_crit_E.Saddle_edge[0], df_crit_E.Saddle_edge[1])
+df_crit_E_pts_saddle = df_crit_E_pts_saddle.select("Ver", col("Saddle_edge[0]").alias("saddle_pt1"), col("Saddle_edge[1]").alias("saddle_pt2"))
+
+
+2.	Flatten an array of array to one column
+- Input: an array of array, e.g.,  [[2,5],[5,8]]
+- Output: a column which is an array, may have duplicates. E.g., [2,5,5,8]
+- Using flatten()
+e.g.,
+df_crit_T_LS_flatten = df_crit_T_LS.select('Ver', flatten('LS_edge'))
+
+Notes: if we want to remove the duplicates inside an array, we can use the array_distinct() function.
+from pyspark.sql.functions import array_distinct
+df_crit_T_LS_flatten_dis = df_crit_T_LS_flatten.withColumn("arraycol_without_dupes", array_distinct("flatten(LS_edge)"))
+
+
+3.	Split a column of nested struct to multiple columns
+- Input: a column of struct, e.g., [2,5]
+- Output: multiple columns, e.g., [2], [5], see an example below
+- Using select()
+e.g.,
+df_crit_E_pts_saddle_sel = df_crit_E_pts_saddle.select(col("Ver"), col("pts_saddle.*"))
+
+4.	Explode a row to multiple rows
+- Input: a column of array, e.g., [2,5,[3,4]]
+- Output: a sized number of rows, e.g., [2]; [5]; [3,4]
+- Using explode()
+Note: if the input column is an array of array, the output rows will be array.
+e.g.,
+df3 = df_crit_VET.select("Ver", explode("Critical"))
