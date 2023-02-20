@@ -1,0 +1,35 @@
+This is a tutorial for triangulating big data point clouds, including processes like downloading las/laz files from the OpenTopology, converting and merging multiple las/files to a single xyz/txt file, triangulating xyz file in a cluster with CGAL.
+
+1. Downloading las/laz files from the OpenTopology
+1) Open https://portal.opentopography.org/datasets
+2) Click "SELECT A REGION"
+3) Select a region, and then choose a data source to download point clouds
+4) For data size smaller than 500 million, we can directly download it. Otherwise, we need to use the Bulk Download mode to download them.
+5) For data size smaller than 500 million, Check of we need all the provided classification, "Ground", "Unclassified", "Vegetation", "Exclude Noise", etc. Choose file format, las or laz. whether calculating TIN or not.
+
+2. Converting a large number laz format files into one single xyz/txt file
+1) Download LAStools https://lastools.github.io/
+2) Create a directory in Windows operation system, copy las2txt.exe and laszip.exe to this directory
+3) Write a bash file to help convert and merge laz files based on the LAStools. Here is an example of bash file las2xyz.sh
+   #!/bin/bash
+   
+   for f in *.laz; do
+   	echo "$f"
+   	./laszip -i ./"$f" -o ./"${f%.laz}.las"
+   	./las2txt -i ./"${f%.laz}.las" -o ./"${f%.laz}.txt" -parse xyz
+   	rm *.las
+   	cat "${f%.laz}.txt" >> $1.xyz
+   	rm *.txt
+   done
+   
+   #~ echo "compressing to tar.gz archive"
+   #~ tar -czvf $1.tar.gz $1.extra_fields
+4) Open git bash terminal, run the command "bash las2xyz.sh test", which will run the bash file and generating a test.xyz file
+
+3. Triangulating xyz file to off file
+1) Open a cluster, load the foolowing modules before cmake, boost/1.59.0, qt/5.8.0, cgal/4.9, cmake/3.10.2, gcc/8.3.1
+2) In the sources folder, run (1) cmake CMakeLists.txt (2) make
+3) The dtri will be generated in the sources folder
+4) Run the command "./dtri /path/to/test.xyz", the off file will be generated in the same path to xyz file
+
+
