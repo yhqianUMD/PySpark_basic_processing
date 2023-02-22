@@ -1,0 +1,37 @@
+Here is a toturial to save and reload a DataFrame to/from a CSV file in .
+
+1. Save a DataFrame to a csv file in HDFS
+# save df_VET_graph_node
+df_VET_graph_node.write.options(header='False', delimiter=',').csv("hdfs_data/sin_sum_VET_graph_node")
+
+Note: if there are Array columns in a DataFrame, we need to specially deal with it with the following two methods.
+1) We can to convert the Array to a string column and then split the string column after reloading.
+df_VET_graph_node = df_VET_graph_node.select('id', col('node_ver_array').cast('string'), 'node_mark')
+# save df_VET_graph_node
+df_VET_graph_node.write.options(header='False', delimiter=',').csv("hdfs_data/sin_sum_VET_graph_node")
+
+schema_df_VET_graph_node = StructType([ \
+    StructField("id",IntegerType(),True), \
+    StructField("node_ver_array",StringType(),True), \
+    StructField("node_mark",IntegerType(),True)
+  ])
+
+hdfs_file_df_VET_graph_node = "hdfs_data/sin_sum_VET_graph_node"
+
+df_VET_graph_node_hdfs = spark.read.format("csv") \
+      .option("header", False) \
+      .schema(schema_df_VET_graph_node)\
+      .load(hdfs_file_df_VET_graph_node)
+
+df_VET_graph_node_hdfs_split = df_VET_graph_node_hdfs.withColumn('node_ver_array_split', split(col("node_ver_array"),", ")).drop('node_ver_array')
+df_VET_graph_node_hdfs_split = df_VET_graph_node_hdfs_split.select('id', 'node_mark', df_VET_graph_node_hdfs_split.node_ver_array_split[0].alias('Ver_0_str'), df_VET_graph_node_hdfs_split.node_ver_array_split[1].alias('Ver_1_str'))
+df_VET_graph_node_hdfs_split = df_VET_graph_node_hdfs_split.withColumn('Ver_0',split(col('Ver_0_str'), "\[")).withColumn('Ver_1',split(col('Ver_1_str'), "\]"))
+df_VET_graph_node_hdfs_split = df_VET_graph_node_hdfs_split.select('id',df_VET_graph_node_hdfs_split.Ver_0[1].alias('Ver_0').cast('integer'),df_VET_graph_node_hdfs_split.Ver_1[0].alias('Ver_1').cast('integer'),'node_mark')
+
+2) We can split the Array column first and then save the DataFrame to a CSV file.
+# save df_VET_graph_node
+df_tri_format_save = df_tri_format.select('tri_id', df_tri_format.tri[0], df_tri_format.tri[1], df_tri_format.tri[2], 'node_mark')
+df_tri_format_save.printSchema()
+
+df_tri_format_save.write.mode('overwrite').options(header='False', delimiter=',').csv("hdfs_data/sin_sum_VET_graph_node_Tri")
+
