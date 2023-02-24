@@ -1,0 +1,9 @@
+When counting the number of rows for a DataFrame df, there are two methods:
+
+1) df.count()
+Note: this method is not stable when the datasize is very big, it would be better to use method 2.
+
+2) df.collect()
+df_col = df.collect()
+len(df_col)
+This method is more stable than method 1.
