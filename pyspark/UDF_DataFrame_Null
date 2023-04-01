@@ -1,0 +1,11 @@
+It is not stable to store data with nested StructType in DataFrames. For example, the following case will return NULL value for the added column of "visted" if we apply UDF for the corresponding DataFrame.
+We can convert this DataFrame to an RDD and apply the UDF to this RDD. Afther that, we convert the RDD back to a DataFrame. The result will be stable and good.
+
+
+
+# With DataFrame
+df_V1_result = df_G_V1_arc_component_dict_gpy.withColumn("visted", bfs_rdd(col('component'), col('multi_SdlPts'), col('subgraphs')))
+
+
+# With RDD
+df_V1_result = df_G_V1_arc_component_dict_gpy.rdd.map(lambda partition: bfs_rdd(partition['component'], partition['multi_SdlPts'], partition['subgraphs'])).toDF()
