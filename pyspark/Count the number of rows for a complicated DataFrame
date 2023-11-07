@@ -1,0 +1,67 @@
+If the DataFrame is obtained through distinct() or groupby() and so on, we might encounter the error of OOM like the following:
+
+23/11/07 16:01:45 INFO executor.Executor: Finished task 954.0 in stage 3.0 (TID 860). 3163 bytes result sent to driver
+23/11/07 16:01:45 INFO executor.CoarseGrainedExecutorBackend: Got assigned task 898
+23/11/07 16:01:45 INFO executor.Executor: Running task 1037.0 in stage 3.0 (TID 898)
+23/11/07 16:01:45 INFO datasources.FileScanRDD: Reading File path: hdfs://mn1.hdp2.cgis.gshpc.umd.edu:8020/user/qiany/SigSpatial_data/NAPA_out_xyz_filtra_tri_origin.csv, range: 45768245248-45902462976, partition values: [empty row]
+
+In this case, the solution is to first count the intermediate DataFrame and then count the expected DataFrame.
+
+For example, the following codes are to compute df_EV relation from the input DataFrame.
+
+# function to load triangles from a csv file
+def load_tri(hdfs_tin_tri_origin):
+    schema_tri_origin = StructType([ \
+        StructField("r1",IntegerType(),True), \
+        StructField("r2",IntegerType(),True), \
+        StructField("r3",IntegerType(),True), \
+        StructField("tri_order",IntegerType(),True) \
+      ])
+    
+    df_tri_origin = spark.read.format("csv") \
+          .option("header", False) \
+          .schema(schema_tri_origin)\
+          .load(hdfs_tin_tri_origin).drop('tri_order')  
+    
+    return df_tri_origin
+
+hdfs_tin_tri_origin = directory + "/" + tin_filename + '_filtra_tri_origin.csv'
+# hdfs_tin_tri_origin = 'hdfs_data' + "/" + 'input_vertices_1_tri_origin.csv'
+df_tri_origin = load_tri(hdfs_tin_tri_origin)
+df_tri_origin.printSchema()
+
+# function to get TE relation
+def get_TE_M1(df_tri):
+    df_TE = df_tri_origin.withColumn("e1", sort_array(F.array("r1", "r2",), False)).withColumn("e2", sort_array(F.array("r1", "r3",), False)).withColumn("e3", sort_array(F.array("r2", "r3",), False)).drop('r1', 'r2', 'r3')
+    
+    return df_TE
+
+# df_tri_origin.persist(StorageLevel.MEMORY_ONLY)
+
+df_TE_init = get_TE_M1(df_tri_origin)
+
+df_TE_init.printSchema()
+
+df_E_1 = df_TE_init.select('e1')
+df_E_2 = df_TE_init.select('e2')
+df_E_3 = df_TE_init.select('e3')
+
+df_E_12 = df_E_1.union(df_E_2)
+df_E_123 = df_E_12.union(df_E_3)
+
+# df_E_123.cache()
+
+df_E = df_E_123.distinct()
+df_EV = df_E.select(df_E.e1, df_E.e1[0], df_E.e1[1])
+df_EV = df_EV.withColumnRenamed('e1', 'e').withColumnRenamed('e1[0]', 'v1').withColumnRenamed('e1[1]', 'v2')
+df_EV.printSchema()
+
+# This is the most import code!!! To count the intermediate DataFrame!!!
+df_EV.count()
+
+t0 = time.time()
+
+df_EV.count()
+
+t1 = time.time()
+print("Time cost:", t1 - t0)
