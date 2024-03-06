@@ -1,0 +1,37 @@
+1. save a DataFrame to a parquet
+# df_Forman_VE_pairs = df_Forman_VE_pairs.repartition(20)
+t_save_0 = time.time()
+
+# the schema of the DataFrame will also be saved
+file_df_Forman_VE_pairs = directory + '/' + tin_filename + '_VE_Pairs' + '.parquet'
+df_Forman_VE_pairs.write.format("parquet").mode("overwrite").save(file_df_Forman_VE_pairs)
+
+t_save_1 = time.time()
+print("Time cost to save df_Forman_VE_pairs in Parquet:", t_save_1 - t_save_0)
+
+Note!!!
+we can also directly use the following if you can guarantee that the DataFrame file does not exist in the HDFS:
+
+file_df_Forman_VE_pairs = directory + '/' + tin_filename + '_VE_Pairs' + '.parquet'
+df_Forman_VE_pairs.write.parquet(file_df_Forman_VE_pairs) 
+
+
+2. reload a DataFrame from HDFS
+
+file_df_Forman_VE_pairs = directory + '/' + tin_filename + '_VE_Pairs' + '.parquet'
+df_Forman_VE_pairs = spark.read.parquet(file_df_Forman_VE_pairs)
+df_Forman_VE_pairs.printSchema()
+
+Note!!!
+If the schema of this DataFrame is not included, you can use the following statement to read a parquet if you know its schema:
+
+schema_df_Forman_VE_pairs = StructType([ \
+    StructField("Saddle_pts",IntegerType(),True)
+  ])
+file_df_Forman_VE_pairs = 'hdfs_data' + '/' + tin_filename + '_VE_Pairs.parquet'
+df_Forman_VE_pairs = spark.read.format("parquet") \
+      .option("header", False) \
+      .schema(schema_df_Forman_VE_pairs)\
+      .load(file_df_Forman_VE_pairs)
+
+df_Forman_VE_pairs.printSchema()
