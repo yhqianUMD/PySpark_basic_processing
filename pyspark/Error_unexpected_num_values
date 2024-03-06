@@ -1,0 +1,49 @@
+1. The function get_mini_saddle_VE() is used to return a saddle as a pair of vertex. The schema for this function should be:
+
+get_mini_saddle_VE_udf = udf(get_mini_saddle_VE, ArrayType(IntegerType()))
+
+PLEASE NOT USE THE FOLLOWING:
+# StructType for get_mini_saddle_VE        
+get_mini_saddle_VE_schema = StructType([
+    StructField("mini_saddle", ArrayType(IntegerType()),True)
+])
+
+get_mini_saddle_VE_udf = udf(get_mini_saddle_VE, get_mini_saddle_VE_schema)
+
+Otherwise, there will be an error:
+Py4JJavaError: An error occurred while calling o1502.showString.
+: org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 396.0 failed 4 times, most recent failure: Lost task 0.3 in stage 396.0 (TID 796, dn2.hdp2.cgis.gshpc.umd.edu, executor 8): java.lang.IllegalStateException: Input row doesn't have expected number of values required by the schema. 1 fields are required while 2 values are provided.
+
+
+The following are the original codes:
+
+# get the potential saddle to be simplified within each component
+# the potential saddle-minimum pair should have the minimal persistence value among all saddle-minimum pairs
+def get_mini_saddle_VE(component, multi_Saddles):
+    # get_LS is used to obtain the edges and triangles of LS in ascending order
+    # component: the id or index of the minimum of this connected component in Graph_VE
+    if len(multi_Saddles) > 0:
+        # initialize the potential minimal saddle
+        mini_saddle = multi_Saddles[0]
+        mini_saddle_persist = mini_saddle[0] # mini_saddle is a pair of vertex, and mini_saddle[0] > mini_saddle[1]
+        
+        for i in range(1, len(multi_Saddles)):
+            if multi_Saddles[i][0] < mini_saddle_persist: # multi_Saddles[i][0] is the persist value of multi_Saddles[i]
+                mini_saddle = multi_Saddles[i]
+                mini_saddle_persist = mini_saddle[0]                
+                
+        return mini_saddle
+    else:
+        return None
+
+# StructType for get_mini_saddle_VE        
+get_mini_saddle_VE_schema = StructType([
+    StructField("mini_saddle", ArrayType(IntegerType()),True)
+])
+
+get_mini_saddle_VE_udf = udf(get_mini_saddle_VE, ArrayType(IntegerType()))
+
+saddles_per_con_VE_mini = saddles_per_con_VE.withColumn("saddle_mini", get_mini_saddle_VE_udf(saddles_per_con_VE.component, saddles_per_con_VE.multi_Saddles))
+saddles_per_con_VE_mini.printSchema()
+
+saddles_per_con_VE_mini.show()
