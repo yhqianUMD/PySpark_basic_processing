@@ -1,5 +1,6 @@
 # Operations on a MapType column in DataFrame
 
+## access the keys and compare keys
 column.keys() is used to get the keys of this MapType column. The data type of column.keys() is not a list neither a single integer/float number. It can be converted to a list via list(column.keys()).
 
 ```
@@ -46,6 +47,32 @@ df_tetra_order_map_add_col
  Row(R1={2: 2.0}, R2={1: 1.0}, edge=[{2: 2.0}, {1: 1.0}]),
  Row(R1={0: 0.0}, R2={1: 1.0}, edge=[{1: 1.0}, {0: 0.0}])]
 ```
+## explode the key-value pairs and store them in separate columns
+
+```
+df_FT_star.printSchema()
+root
+ |-- Ver: integer (nullable = true)
+ |-- FT: map (nullable = true)
+ |    |-- key: array
+ |    |    |-- element: integer (containsNull = true)
+ |    |-- value: array (valueContainsNull = true)
+ |    |    |-- element: array (containsNull = true)
+ |    |    |    |-- element: integer (containsNull = true)
+
+df_exploded = df_FT_star.select("Ver", explode(col("FT")).alias("key", "value"))
+df_exploded.printSchema()
+root
+ |-- Ver: integer (nullable = true)
+ |-- Face: array (nullable = false)
+ |    |-- element: integer (containsNull = true)
+ |-- FT: array (nullable = true)
+ |    |-- element: array (containsNull = true)
+ |    |    |-- element: integer (containsNull = true)
+
+# we can use groupby() to perform subsequent operations
+```
+
 
 # TypeError: unhashable type: 'list'
 MapType in PySpark corresponds to the dictionary type in Python. However, the error "TypeError: unhashable type: 'list'" may arise in PySpark when trying to perform operations directly on complex data types like arrays or nested arrays.
