@@ -1,4 +1,4 @@
-## 1. save a DataFrame to a parquet
+1. save a DataFrame to a parquet
 # df_Forman_VE_pairs = df_Forman_VE_pairs.repartition(20)
 t_save_0 = time.time()
 
@@ -16,7 +16,7 @@ file_df_Forman_VE_pairs = directory + '/' + tin_filename + '_VE_Pairs' + '.parqu
 df_Forman_VE_pairs.write.parquet(file_df_Forman_VE_pairs) 
 
 
-## 2. reload a DataFrame from HDFS
+2. reload a DataFrame from HDFS
 
 file_df_Forman_VE_pairs = directory + '/' + tin_filename + '_VE_Pairs' + '.parquet'
 df_Forman_VE_pairs = spark.read.parquet(file_df_Forman_VE_pairs)
@@ -36,6 +36,6 @@ df_Forman_VE_pairs = spark.read.format("parquet") \
 
 df_Forman_VE_pairs.printSchema()
 
-## 3. saving a DataFrame
+3. save a DataFrame when the program is stuck
 
 If the pyspark program was stuck when saving a DataFrame to a CSV file or other formats of files, we can set the blacklist tab to False and the program will successfully run it. This is because the program for saving a DataFrame to a file requires a lot of time and setting the blacklist to False allows to manage it.
